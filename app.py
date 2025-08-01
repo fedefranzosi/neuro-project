@@ -32,5 +32,7 @@ def index():
     return render_template('index.html', patients=patients)
 
 if __name__ == '__main__':
-    db.create_all()
+    # Ensure database tables are created within the application context
+    with app.app_context():
+        db.create_all()
     app.run(host='0.0.0.0')
