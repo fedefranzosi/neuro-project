@@ -43,11 +43,18 @@ class Patient(db.Model):
     health_insurance = db.Column(db.String(120), nullable=True)
     reason = db.Column(db.Text, nullable=True)
     symptom_start = db.Column(db.Date, nullable=True)
-    hpo = db.Column(db.Text, nullable=True)
     diagnosed = db.Column(db.Boolean, default=False)
     diagnosis = db.Column(db.String(255), nullable=True)
     video_url = db.Column(db.String(255), nullable=True)
     studies_link = db.Column(db.String(255), nullable=True)
+
+
+class Phenotype(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    hpo_id = db.Column(db.String(20), nullable=False)
+    hpo_label = db.Column(db.String(255), nullable=False)
+    patient = db.relationship('Patient', backref=db.backref('phenotypes', lazy=True))
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -63,7 +70,6 @@ def index():
         reason = request.form.get('reason', '')
         symptom_start_str = request.form.get('symptom_start')
         symptom_start = datetime.strptime(symptom_start_str, '%Y-%m-%d').date() if symptom_start_str else None
-        hpo = request.form.get('hpo', '')
         diagnosed = bool(request.form.get('diagnosed'))
         diagnosis = request.form.get('diagnosis', '') if diagnosed else ''
         video_url = request.form.get('video_url', '')
@@ -78,13 +84,18 @@ def index():
             health_insurance=health_insurance,
             reason=reason,
             symptom_start=symptom_start,
-            hpo=hpo,
             diagnosed=diagnosed,
             diagnosis=diagnosis,
             video_url=video_url,
             studies_link=studies_link,
         )
         db.session.add(patient)
+        db.session.commit()
+
+        for term in request.form.getlist('hpo_terms'):
+            hpo_id, hpo_label = term.split('|', 1)
+            phenotype = Phenotype(patient_id=patient.id, hpo_id=hpo_id, hpo_label=hpo_label)
+            db.session.add(phenotype)
         db.session.commit()
         return redirect('/')
     patients = Patient.query.all()

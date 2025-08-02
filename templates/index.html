@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <title>Patient Intake Form</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
 <div class="container py-5">
@@ -47,8 +48,8 @@
         <input type="date" class="form-control" name="symptom_start">
       </div>
       <div class="col-md-6 mb-3">
-        <label class="form-label">HPO</label>
-        <input class="form-control" name="hpo">
+        <label class="form-label">Términos HPO</label>
+        <select class="form-control" id="hpo_terms" name="hpo_terms" multiple="multiple"></select>
       </div>
     </div>
     <div class="form-check mb-3">
@@ -78,6 +79,7 @@
         <th>DNI</th>
         <th>Fecha ingreso</th>
         <th>Diagnóstico</th>
+        <th>HPO</th>
       </tr>
     </thead>
     <tbody>
@@ -88,10 +90,44 @@
         <td>{{ p.dni }}</td>
         <td>{{ p.admission_date }}</td>
         <td>{{ p.diagnosis }}</td>
+        <td>{% for ph in p.phenotypes %}{{ ph.hpo_label }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('#hpo_terms').select2({
+    placeholder: 'Buscar términos HPO',
+    minimumInputLength: 3,
+    ajax: {
+      url: 'https://www.ebi.ac.uk/ols/api/search',
+      dataType: 'json',
+      delay: 250,
+      data: function (params) {
+        return {
+          q: params.term,
+          ontology: 'hp',
+          rows: 10
+        };
+      },
+      processResults: function (data) {
+        return {
+          results: data.response.docs.map(function(item) {
+            return {
+              id: item.obo_id + '|' + item.label,
+              text: item.label
+            };
+          })
+        };
+      },
+      cache: true
+    }
+  });
+});
+</script>
 </body>
 </html>
