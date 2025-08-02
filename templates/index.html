@@ -104,17 +104,25 @@ $(document).ready(function() {
     placeholder: 'Buscar términos HPO',
     minimumInputLength: 3,
     ajax: {
-      url: 'https://www.ebi.ac.uk/ols/api/search',
+      url: 'https://www.ebi.ac.uk/ols4/api/search',
       dataType: 'json',
       delay: 250,
       data: function (params) {
+        var term = params.term || '';
+        var query = term;
+        if (/^\d+$/.test(term)) {
+          query = 'HP:' + term;
+        }
         return {
-          q: params.term,
+          q: query,
           ontology: 'hp',
           rows: 10
         };
       },
       processResults: function (data) {
+        if (!data.response || !data.response.docs) {
+          return { results: [] };
+        }
         return {
           results: data.response.docs.map(function(item) {
             return {
