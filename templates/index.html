@@ -111,7 +111,8 @@ $(document).ready(function() {
         var term = params.term || '';
         var query = term;
         if (/^\d+$/.test(term)) {
-          query = 'HP:' + term;
+          // Pad numeric input to 7 digits so search results are specific
+          query = 'HP:' + term.padStart(7, '0');
         }
         return {
           q: query,
