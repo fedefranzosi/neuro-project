@@ -12,4 +12,5 @@ a Google form.
 2. Run `docker compose up --build`.
 3. Visit `http://localhost:5000` to access the form.
 
-Data is stored in the MySQL container's volume.
+The database schema is recreated each time the stack starts, so any previously
+stored data will be cleared.
