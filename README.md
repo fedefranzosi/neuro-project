@@ -1,7 +1,8 @@
 # Neuro Project
 
 This project demonstrates a simple Dockerized Flask application with a MySQL
-backend for storing patient information from a web form.
+backend for storing patient information from a web form. The form uses
+Bootstrap for styling so it looks polished, similar to a Google form.
 
 ## Quick start
 
